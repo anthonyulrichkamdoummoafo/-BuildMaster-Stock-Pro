@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  name      String
+  role      String   @default("CASHIER") // ADMIN, CASHIER, STOCK_MANAGER, SUPERVISOR
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sales     Sale[]
+  logs      AuditLog[]
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  products    Product[]
+}
+
+model Product {
+  id                String         @id @default(uuid())
+  sku               String         @unique
+  barcode           String?        @unique
+  name              String
+  description       String?
+  categoryId        String
+  category          Category       @relation(fields: [categoryId], references: [id])
+  brand             String?
+  unitType          String         @default("PIECE") // PIECE, BAG, BUNDLE, KG, METRE
+  purchasePrice     Float
+  sellingPrice      Float
+  wholesalePrice    Float?
+  minStockLevel     Int            @default(10)
+  currentStock      Int            @default(0)
+  warehouseLocation String?
+  supplierId        String?
+  supplier          Supplier?      @relation(fields: [supplierId], references: [id])
+  image             String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  saleItems         SaleItem[]
+  stockHistory      StockHistory[]
+}
+
+model StockHistory {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  quantity    Int
+  type        String   // ADDITION, REDUCTION, ADJUSTMENT, DAMAGE, TRANSFER
+  reason      String?
+  performedBy String
+  createdAt   DateTime @default(now())
+}
+
+model Supplier {
+  id           String    @id @default(uuid())
+  name         String
+  contactName  String?
+  email        String?
+  phone        String?
+  address      String?
+  debtAmount   Float     @default(0)
+  products     Product[]
+  purchases    Purchase[]
+}
+
+model Customer {
+  id           String   @id @default(uuid())
+  name         String
+  email        String?
+  phone        String?
+  address      String?
+  loyaltyPoints Int     @default(0)
+  debtAmount   Float    @default(0)
+  sales        Sale[]
+}
+
+model Sale {
+  id            String     @id @default(uuid())
+  invoiceNumber String     @unique
+  userId        String
+  user          User       @relation(fields: [userId], references: [id])
+  customerId    String?
+  customer      Customer?  @relation(fields: [customerId], references: [id])
+  totalAmount   Float
+  discount      Float      @default(0)
+  tax           Float      @default(0)
+  netAmount     Float
+  paymentMethod String     // CASH, MOMO, BANK_TRANSFER, CREDIT
+  status        String     @default("COMPLETED") // COMPLETED, REFUNDED, PENDING
+  createdAt     DateTime   @default(now())
+  items         SaleItem[]
+}
+
+model SaleItem {
+  id        String  @id @default(uuid())
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+  total     Float
+}
+
+model Purchase {
+  id            String   @id @default(uuid())
+  orderNumber   String   @unique
+  supplierId    String
+  supplier      Supplier @relation(fields: [supplierId], references: [id])
+  totalAmount   Float
+  status        String   @default("RECEIVED") // PENDING, RECEIVED, CANCELLED
+  createdAt     DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  module    String
+  details   String?
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
+}
