@@ -6,9 +6,12 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import POS from './pages/POS';
 import Inventory from './pages/Inventory';
+import SettingsPage from './pages/Settings';
+import { useTranslation } from './lib/i18n';
 
 const Navigation = () => {
   const { logout, user } = useAuthStore();
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -21,19 +24,19 @@ const Navigation = () => {
       <div className="font-bold text-blue-500 mb-4 px-2 text-center text-[10px] leading-tight uppercase tracking-tighter">
         BuildMaster<br/>Stock Pro
       </div>
-      <NavLink to="/" icon={<LayoutDashboard size={24} />} label="Dash" />
-      <NavLink to="/pos" icon={<ShoppingCart size={24} />} label="POS" />
-      <NavLink to="/inventory" icon={<Package size={24} />} label="Inv" />
-      <NavLink to="/customers" icon={<Users size={24} />} label="Cust" />
-      <NavLink to="/suppliers" icon={<Truck size={24} />} label="Sup" />
+      <NavLink to="/" icon={<LayoutDashboard size={24} />} label={t('dashboard').substring(0, 4)} />
+      <NavLink to="/pos" icon={<ShoppingCart size={24} />} label={t('pos').substring(0, 4)} />
+      <NavLink to="/inventory" icon={<Package size={24} />} label={t('inventory').substring(0, 4)} />
+      <NavLink to="/customers" icon={<Users size={24} />} label={t('customers').substring(0, 4)} />
+      <NavLink to="/suppliers" icon={<Truck size={24} />} label={t('suppliers').substring(0, 4)} />
       <div className="mt-auto flex flex-col gap-6">
-        <NavLink to="/settings" icon={<Settings size={24} />} label="Set" />
+        <NavLink to="/settings" icon={<Settings size={24} />} label={t('settings').substring(0, 4)} />
         <button 
           onClick={handleLogout}
           className="flex flex-col items-center gap-1 opacity-60 hover:opacity-100 hover:text-red-500 transition-all cursor-pointer"
         >
           <LogOut size={24} />
-          <span className="text-[10px] uppercase font-bold tracking-widest">Exit</span>
+          <span className="text-[10px] uppercase font-bold tracking-widest">{t('logout').substring(0, 4)}</span>
         </button>
       </div>
       <div className="mt-4 text-[8px] text-zinc-500 uppercase rotate-90 w-full text-center">
@@ -99,6 +102,19 @@ export default function App() {
                   <Navigation />
                   <main className="p-8 flex-1">
                     <Inventory />
+                  </main>
+                </div>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/settings" 
+            element={
+              <ProtectedRoute>
+                <div className="flex flex-col min-h-screen">
+                  <Navigation />
+                  <main className="p-8 flex-1">
+                    <SettingsPage />
                   </main>
                 </div>
               </ProtectedRoute>

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../lib/store';
+import { useTranslation } from '../lib/i18n';
 import { motion } from 'motion/react';
 import { Lock, User } from 'lucide-react';
 
 export default function Login() {
+  const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -56,14 +58,14 @@ export default function Login() {
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-widest pl-1">Identities</label>
+            <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-widest pl-1">{t('identities')}</label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
               <input 
                 type="text" 
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="USERNAME"
+                placeholder={t('identities').toUpperCase()}
                 className="w-full bg-black border border-zinc-800 p-3 pl-10 text-white font-mono text-sm focus:border-blue-500 outline-none transition-colors"
                 required
               />
@@ -71,14 +73,14 @@ export default function Login() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-widest pl-1">Security</label>
+            <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-widest pl-1">{t('security')}</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
               <input 
                 type="password" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="PASSWORD"
+                placeholder="********"
                 className="w-full bg-black border border-zinc-800 p-3 pl-10 text-white font-mono text-sm focus:border-blue-500 outline-none transition-colors"
                 required
               />
@@ -92,7 +94,7 @@ export default function Login() {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black p-4 uppercase tracking-[0.3em] text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center gap-2"
           >
-            {loading ? 'INITIATING...' : 'ACCESS SYSTEM'}
+            {loading ? 'INITIATING...' : t('accessSystem')}
           </button>
         </form>
 

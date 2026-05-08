@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, Package, ShoppingCart, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Package, ShoppingCart, TrendingUp, AlertTriangle } from 'lucide-react';
+import { useTranslation } from '../lib/i18n';
+import { apiFetch } from '../lib/api';
 
 const mockChartData = [
   { name: 'Mon', sales: 4000 },
@@ -13,13 +15,25 @@ const mockChartData = [
 ];
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<any>(null);
 
-  useEffect(() => {
-    fetch('/api/dashboard/stats')
-      .then(res => res.json())
-      .then(data => setStats(data));
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await apiFetch('/api/dashboard/stats');
+      const data = await res.json();
+      setStats(data);
+    } catch (error) {
+      console.error('Stats fetch failed');
+    }
   }, []);
+
+  useEffect(() => {
+    fetchStats();
+    // Real-time polling every 10 seconds for dashboard freshness (optimized from 5s)
+    const interval = setInterval(fetchStats, 10000);
+    return () => clearInterval(interval);
+  }, [fetchStats]);
 
   if (!stats) return <div className="p-8 text-xs font-mono uppercase animate-pulse">Computing data vectors...</div>;
 
@@ -27,7 +41,7 @@ export default function Dashboard() {
     <div className="space-y-8 max-w-7xl mx-auto">
       <div className="flex justify-between items-end border-b border-zinc-300 pb-6 mb-8">
         <div>
-          <h1 className="text-4xl font-black uppercase tracking-tighter">Command Centre</h1>
+          <h1 className="text-4xl font-black uppercase tracking-tighter">{t('dashboard')}</h1>
           <p className="label-micro mt-1 opacity-100 font-bold">Operation Metrics / System Status: Online</p>
         </div>
         <div className="text-right">
@@ -37,10 +51,10 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Daily Revenue" value={`XAF ${stats.todayRevenue.toLocaleString()}`} icon={<TrendingUp size={20}/>} trend="+12.4%" color="text-green-600" />
-        <StatCard title="Total Inventory" value={stats.totalProducts} icon={<Package size={20}/>} trend="Stable" color="text-blue-600" />
-        <StatCard title="Sales Volume" value={stats.totalSales} icon={<ShoppingCart size={20}/>} trend="+3.1%" color="text-zinc-900" />
-        <StatCard title="Low Stock Alerts" value={stats.lowStock} icon={<AlertTriangle size={20}/>} trend="CRITICAL" color="text-red-600" isCritical={stats.lowStock > 0} />
+        <StatCard title={t('revenue')} value={`XAF ${stats.todayRevenue.toLocaleString()}`} icon={<TrendingUp size={20}/>} trend="+12.4%" color="text-green-600" />
+        <StatCard title={t('stock')} value={stats.totalProducts} icon={<Package size={20}/>} trend="Stable" color="text-blue-600" />
+        <StatCard title={t('sales')} value={stats.totalSales} icon={<ShoppingCart size={20}/>} trend="+3.1%" color="text-zinc-900" />
+        <StatCard title={t('alerts')} value={stats.lowStock} icon={<AlertTriangle size={20}/>} trend="CRITICAL" color="text-red-600" isCritical={stats.lowStock > 0} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-12">
